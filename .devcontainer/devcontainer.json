@@ -1,0 +1,44 @@
+{
+  "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "files.autoSave": "afterDelay",
+        "files.autoSaveDelay": 1000,
+        "editor.renderWhitespace": "all",
+        "extensions.autoUpdate": true,
+        "extensions.autoCheckUpdates": true,
+        "[python]": {
+          "editor.defaultFormatter": "ms-python.black-formatter",
+          "editor.tabSize": 4,
+          "defaultInterpreterPath": "/usr/local/bin/python"
+        },
+        "jupyter.kernels.excludePythonEnvironments": [
+          "/usr/bin/python3",
+          "/bin/python3"
+        ],
+        "json.schemaDownload.enable": true,
+        "redhat.telemetry.enabled": false,
+        "git.openRepositoryInParentFolders": "never",
+        "python.testing.pytestEnabled": true
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "ms-python.flake8",
+        "ms-python.mypy-type-checker",
+        "ms-python.isort",
+        "ms-toolsai.jupyter",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  }
+}
