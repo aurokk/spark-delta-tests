@@ -140,3 +140,4 @@ dmypy.json
 
 output/
 .secrets/
+.benchmarks/
