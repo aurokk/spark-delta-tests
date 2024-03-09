@@ -5,34 +5,44 @@ import pytest
 from tests.common import build_schema, build_session
 
 
-class Test007:
+class Test014:
 
     #
-    # Делаю merge (A->B) с добавлением 1 строчки 100 раз
-    # Статистики включены, включен z-order, размер файликов 1 MB
+    # Делаю merge (A->B) с обновлением 1 строчки 100 раз
+    # Ликвид кластеринг по id, статистики включены, размер файликов 1 MB
     #
-    # ------------------------------------------- benchmark: 1 tests -------------------------------------------
-    # Name (time in s)        Min      Max    Mean  StdDev  Median     IQR  Outliers     OPS  Rounds  Iterations
-    # ----------------------------------------------------------------------------------------------------------
-    # test                 6.8795  11.7472  7.3257  0.6281  7.1299  0.3802     10;10  0.1365     100           1
-    # ----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------- benchmark: 1 tests ------------------------------------------
+    # Name (time in s)        Min     Max    Mean  StdDev  Median     IQR  Outliers     OPS  Rounds  Iterations
+    # ---------------------------------------------------------------------------------------------------------
+    # test                 1.5593  3.1265  1.7770  0.3325  1.6268  0.1152     12;22  0.5628     100           1
+    # ---------------------------------------------------------------------------------------------------------
     #
     def setup_method(self, method) -> None:
         def configure(x: SparkSession.Builder):
             (
-                x.config("spark.sql.files.maxRecordsPerFile", "6250").config(
-                    "spark.databricks.delta.optimize.maxFileSize", "1048576"
+                x.config("spark.sql.files.maxRecordsPerFile", "6250")
+                .config("spark.databricks.delta.optimize.maxFileSize", "1048576")
+                .config(
+                    "spark.databricks.delta.clusteredTable.enableClusteringTablePreview",
+                    "true",
                 )
             )  # 10_000_000 / 1600
 
         self.session = build_session(configure)
         self.schema = build_schema()
-        self.location = "s3a://tests/test_007"
+        self.location = "s3a://tests/test_014"
+        self.tmp_location = "s3a://tests/test_014_tmp"
         self.table = (
             DeltaTable.createIfNotExists(self.session)
             .addColumns(self.schema)
-            .location(self.location)
+            .location(self.tmp_location)
             .execute()
+        )
+        self.session.sql(
+            f"CREATE TABLE IF NOT EXISTS delta.`{self.location}` "
+            "USING DELTA "
+            "CLUSTER BY (id) "
+            f"AS SELECT * FROM delta.`{self.tmp_location}`;"
         )
         self.session.sql(
             f"ALTER TABLE delta.`{self.location}` "
@@ -41,11 +51,6 @@ class Test007:
         self.session.read.format("delta").load("s3a://tests/test_004").write.format(
             "delta"
         ).mode("append").save(self.location)
-        (
-            DeltaTable.forPath(self.session, self.location)
-            .optimize()
-            .executeZOrderBy("id")
-        )
         self.startingId = 10_000_000
 
     def act(self) -> None:
@@ -58,6 +63,7 @@ class Test007:
                 startingId=self.startingId,
             )
             .withSchema(self.schema)
+            .withColumnSpec("id", minValue=0, maxValue=9_999_999, random=True)
             .withColumnSpec(
                 "field_0",
                 values=["online", "offline", "unknown"],

@@ -51,7 +51,7 @@ class Test004:
     def test_check(self) -> None:
         self.test_000_data = (
             self.session.read.format("delta")
-            .load(f"s3a://tests/{self.location}")
+            .load(self.location)
             .persist()
         )
         self.test_000_data.show()

@@ -5,29 +5,26 @@ import pytest
 from tests.common import build_schema, build_session
 
 
-class Test007:
+class Test010:
 
     #
-    # Делаю merge (A->B) с добавлением 1 строчки 100 раз
-    # Статистики включены, включен z-order, размер файликов 1 MB
+    # Делаю merge (A->B) с обновлением 1 строчки 100 раз
+    # Статистики отключены, размер файликов 1 MB
     #
-    # ------------------------------------------- benchmark: 1 tests -------------------------------------------
-    # Name (time in s)        Min      Max    Mean  StdDev  Median     IQR  Outliers     OPS  Rounds  Iterations
-    # ----------------------------------------------------------------------------------------------------------
-    # test                 6.8795  11.7472  7.3257  0.6281  7.1299  0.3802     10;10  0.1365     100           1
-    # ----------------------------------------------------------------------------------------------------------
+    # ------------------------------------------- benchmark: 1 tests ------------------------------------------
+    # Name (time in s)        Min     Max    Mean  StdDev  Median     IQR  Outliers     OPS  Rounds  Iterations
+    # ---------------------------------------------------------------------------------------------------------
+    # test                 5.4135  8.5823  5.8532  0.4774  5.6431  0.5247      15;2  0.1708     100           1
+    # ---------------------------------------------------------------------------------------------------------
     #
+
     def setup_method(self, method) -> None:
         def configure(x: SparkSession.Builder):
-            (
-                x.config("spark.sql.files.maxRecordsPerFile", "6250").config(
-                    "spark.databricks.delta.optimize.maxFileSize", "1048576"
-                )
-            )  # 10_000_000 / 1600
+            (x.config("spark.sql.files.maxRecordsPerFile", "6250"))  # 10_000_000 / 1600
 
         self.session = build_session(configure)
         self.schema = build_schema()
-        self.location = "s3a://tests/test_007"
+        self.location = "s3a://tests/test_010"
         self.table = (
             DeltaTable.createIfNotExists(self.session)
             .addColumns(self.schema)
@@ -36,16 +33,11 @@ class Test007:
         )
         self.session.sql(
             f"ALTER TABLE delta.`{self.location}` "
-            "SET TBLPROPERTIES ('delta.dataSkippingNumIndexedCols' = 32)"
+            "SET TBLPROPERTIES ('delta.dataSkippingNumIndexedCols' = 0)"
         )
         self.session.read.format("delta").load("s3a://tests/test_004").write.format(
             "delta"
         ).mode("append").save(self.location)
-        (
-            DeltaTable.forPath(self.session, self.location)
-            .optimize()
-            .executeZOrderBy("id")
-        )
         self.startingId = 10_000_000
 
     def act(self) -> None:
@@ -58,6 +50,7 @@ class Test007:
                 startingId=self.startingId,
             )
             .withSchema(self.schema)
+            .withColumnSpec("id", minValue=0, maxValue=9_999_999, random=True)
             .withColumnSpec(
                 "field_0",
                 values=["online", "offline", "unknown"],
