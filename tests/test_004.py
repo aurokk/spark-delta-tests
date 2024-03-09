@@ -3,15 +3,15 @@ import dbldatagen as dg  # type: ignore
 from tests.common import build_schema, build_session
 
 
-class Test000:
+class Test004:
     #
     # Генерирую данные
-    # ~160 MB, 1_000_000 строк, 2 партиции
+    # ~1600 MB, 10_000_000 строк, 2 партиции
 
     def setup_method(self, method) -> None:
         self.session = build_session()
         self.schema = build_schema()
-        self.location = "s3a://tests/test_000"
+        self.location = "s3a://tests/test_004"
         self.table = (
             DeltaTable.createIfNotExists(self.session)
             .addColumns(self.schema)
@@ -23,7 +23,7 @@ class Test000:
         df = (
             dg.DataGenerator(
                 self.session,
-                rows=1_000_000,
+                rows=10_000_000,
                 partitions=2,
                 seedColumnName="_id",
             )

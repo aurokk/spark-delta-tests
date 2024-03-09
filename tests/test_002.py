@@ -6,8 +6,8 @@ from tests.common import build_schema, build_session
 class Test002:
 
     #
+    # Делаю append 100 раз (160 MB * 100 ~= 16 GB)
     # Расчет статистик на 5 колонках (дефолт)
-    # Делаю Append 100 раз (160mb * 100 ~= 16gb)
     #
     # ------------------------------------------- benchmark: 1 tests -------------------------------------------
     # Name (time in s)        Min      Max    Mean  StdDev  Median     IQR  Outliers     OPS  Rounds  Iterations
