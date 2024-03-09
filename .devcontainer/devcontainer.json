@@ -23,13 +23,15 @@
         "json.schemaDownload.enable": true,
         "redhat.telemetry.enabled": false,
         "git.openRepositoryInParentFolders": "never",
-        "python.testing.pytestEnabled": true
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": [
+          "-s"
+        ]
       },
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
         "ms-python.black-formatter",
-        "ms-python.flake8",
         "ms-python.mypy-type-checker",
         "ms-python.isort",
         "ms-toolsai.jupyter",

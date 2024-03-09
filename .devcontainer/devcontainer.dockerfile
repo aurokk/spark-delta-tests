@@ -113,8 +113,9 @@ RUN pip install \
   python-dotenv \
   requests \
   hvac \
-  faker \
   pytest \
-  pytest-benchmark
+  pytest-benchmark \
+  dbldatagen \
+  pyparsing
 
 ENV PYTHONPATH "$PYTHONPATH:/workspace:/workspace/src"

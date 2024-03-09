@@ -1,22 +1,54 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType, StructField, IntegerType
+from pyspark.sql.types import (
+    StructType,
+    StructField,
+    IntegerType,
+    LongType,
+    StringType,
+    TimestampType,
+)
+from typing import Callable, Optional
 
 
 def build_schema() -> StructType:
     return StructType(
         [
-            StructField("c1", IntegerType(), True),
-            StructField("c2", IntegerType(), True),
+            StructField("id", LongType(), True),
+            # 1
+            StructField("field_0", StringType(), True),
+            StructField("field_1", TimestampType(), True),
+            StructField("field_2", IntegerType(), True),
+            StructField("field_3", StringType(), True),
+            StructField("field_4", TimestampType(), True),
+            StructField("field_5", IntegerType(), True),
+            StructField("field_6", StringType(), True),
+            StructField("field_7", TimestampType(), True),
+            StructField("field_8", IntegerType(), True),
+            StructField("field_9", StringType(), True),
+            # 11
+            StructField("field_10", TimestampType(), True),
+            StructField("field_11", IntegerType(), True),
+            StructField("field_12", StringType(), True),
+            StructField("field_13", TimestampType(), True),
+            StructField("field_14", IntegerType(), True),
+            StructField("field_15", StringType(), True),
+            StructField("field_16", TimestampType(), True),
+            StructField("field_17", IntegerType(), True),
+            StructField("field_18", StringType(), True),
+            StructField("field_19", TimestampType(), True),
+            # 21
         ]
     )
 
 
-def build_session() -> SparkSession:
+def build_session(
+    configure: Optional[Callable[[SparkSession.Builder], None]] = None,
+) -> SparkSession:
 
     threads = 2
     memory = "4g"
 
-    return (
+    builder = (
         SparkSession.Builder()
         .appName("test_000")
         .master(f"local[{threads}]")
@@ -53,5 +85,9 @@ def build_session() -> SparkSession:
         .config("spark.hadoop.fs.s3a.connection.establish.timeout", "5000")
         .config("spark.hadoop.fs.s3a.connection.timeout", "10000")
         .config("spark.hadoop.fs.s3a.attempts.maximum", "1")
-        .getOrCreate()
     )
+
+    if configure is not None:
+        configure(builder)
+
+    return builder.getOrCreate()
